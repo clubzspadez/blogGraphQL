@@ -25,20 +25,43 @@ import {
 // `;
 
 // third example type definition with all Custom types
+// const typeDefs = `
+//     type Query {
+//         me: User
+//     }
+//
+//     type User {
+//         id: ID!
+//         name: String!
+//         age: Int
+//         location:String!
+//         alive: Boolean!
+//         salary: Float!
+//     }
+// `;
+
 const typeDefs = `
     type Query {
         me: User
+        post: Post
     }
-    
+
     type User {
         id: ID!
         name: String!
-        age: Int!
+        age: Int
         location:String!
         alive: Boolean!
         salary: Float!
     }
-`;
+    
+    type Post {
+        id: ID!
+        title: String!
+        body: String!
+        published: Boolean!
+    }
+`
 
 
 
@@ -59,6 +82,16 @@ const userInformation2 = {
     salary: 21120123.223
 };
 
+const postInformation = {
+    id: '12354',
+    title: 'Test Name for blog post',
+    body: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+     when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
+     It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. 
+     It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker 
+     including versions of Lorem Ipsum.`,
+    published: false
+}
 
 
 // const resolverSetup = ({
@@ -82,17 +115,15 @@ const userInformation2 = {
 // };
 
 //resolver with customer type being returned for me query
-const resolverSetup = ({
-                           id,
-                           name,
-                           age,
-                           location,
-                           alive,
-                           salary
-                       }) => {
+const resolverSetup = ( userInfo, post) => {
     return {
         Query: {
-            me: () => {
+            me: ({id,
+                 name,
+                 age,
+                 location,
+                 alive,
+                 salary } = userInfo) => {
                 return {
                     id,
                     name,
@@ -101,13 +132,21 @@ const resolverSetup = ({
                     alive,
                     salary
                 }
+            },
+            post: ({id, title, body, published} = post) => {
+                return {
+                    id,
+                    title,
+                    body,
+                    published
+                }
             }
         }
     }
 };
 
 // const resolvers = resolverSetup(userInformation);
-const resolvers = resolverSetup(userInformation2);
+const resolvers = resolverSetup(userInformation2, postInformation);
 
 const server = new GraphQLServer({
     typeDefs,
