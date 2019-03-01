@@ -1,2 +1,12 @@
-.gitignore
-node_modules
+.DS_Store
+.env*
+!.env.example
+node_modules/
+build/
+*.orig
+*.log
+npm-debug.log.*
+.idea
+.vscode
+*.iml
+.idea
