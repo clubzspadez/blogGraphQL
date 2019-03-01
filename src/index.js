@@ -42,6 +42,7 @@ import {
 
 const typeDefs = `
     type Query {
+        add(a: Float!, b: Float!): Float!
         me: User
         post: Post
     }
@@ -140,7 +141,8 @@ const resolverSetup = ( userInfo, post) => {
                     body,
                     published
                 }
-            }
+            },
+            add: (obj, args, context, info) => args.a + args.b
         }
     }
 };
