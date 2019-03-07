@@ -45,6 +45,8 @@ const typeDefs = `
         add(a: Float!, b: Float!): Float!
         me: User
         post: Post
+        grades: [Int!]!
+        addGrades(total: [Float!]!): Float!
     }
 
     type User {
@@ -94,6 +96,8 @@ const postInformation = {
     published: false
 }
 
+const grades = [100, 90, 70]
+
 
 // const resolverSetup = ({
 //     id,
@@ -116,7 +120,7 @@ const postInformation = {
 // };
 
 //resolver with customer type being returned for me query
-const resolverSetup = ( userInfo, post) => {
+const resolverSetup = ( userInfo, post, grades) => {
     return {
         Query: {
             me: ({id,
@@ -142,13 +146,15 @@ const resolverSetup = ( userInfo, post) => {
                     published
                 }
             },
-            add: (obj, args, context, info) => args.a + args.b
+            add: (obj, args, context, info) => args.a + args.b,
+            grades: (parent, args, context, info) =>  [...grades],
+            addGrades: (parent, args, context, info) => (args.total.length !== 0 ? (args.total.reduce((acc, value) =>  acc + value))/args.total.length : 0)
         }
     }
 };
 
 // const resolvers = resolverSetup(userInformation);
-const resolvers = resolverSetup(userInformation2, postInformation);
+const resolvers = resolverSetup(userInformation2, postInformation, grades);
 
 const server = new GraphQLServer({
     typeDefs,
