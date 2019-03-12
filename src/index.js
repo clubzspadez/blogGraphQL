@@ -43,11 +43,17 @@ import {
 const typeDefs = `
     type Query {
         add(a: Float!, b: Float!): Float!
-        me: User
-        post: Post
+        me: User!
+        post: Post!
         posts(query: String): [Post!]!
         grades: [Int!]!
         addGrades(total: [Float!]!): Float!
+        comments:[Comment!]!
+    }
+
+    type Comment {
+        id: ID!
+        text: String!
     }
 
     type User {
@@ -78,22 +84,40 @@ const typeDefs = `
 //     bio: 'This is your typical bio!'
 // }
 
+const arrayOfComments = [{
+        id: '1',
+        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl'
+    },
+    {
+        id: '2',
+        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl'
+    },
+    {
+        id: '3',
+        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl'
+    },
+    {
+        id: '4',
+        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl'
+    }
+]
+
 const userInformation2 = [{
-    id: 'NKCQJDMUIH1231',
-    name: 'Jonathan',
-    age: 26,
-    location: 'Burlington ',
-    bio: 'This is your typical bio!',
-    alive: true
-},
-{
-    id: 'kasdkjsadasd',
+        id: 'NKCQJDMUIH1231',
+        name: 'Jonathan',
+        age: 26,
+        location: 'Burlington ',
+        bio: 'This is your typical bio!',
+        alive: true
+    },
+    {
+        id: 'kasdkjsadasd',
         name: 'Jose',
-    age: 22,
-    location: 'Atlanta ',
-    bio: 'This is your typical bio!',
-    alive: true
-}, {
+        age: 22,
+        location: 'Atlanta ',
+        bio: 'This is your typical bio!',
+        alive: true
+    }, {
         id: 'adjaskdjsakjd',
         name: 'Angel',
         age: 19,
@@ -105,38 +129,39 @@ const userInformation2 = [{
 
 
 const postInformation = [{
-    id: '1',
-    title: 'Vacationing home',
-    body: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+        id: '1',
+        title: 'Vacationing home',
+        body: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
      when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
      It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. 
      It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker 
      including versions of Lorem Ipsum. mass`,
-    published: false,
-    author: 'NKCQJDMUIH1231'
-},
-{
-    id: '2',
+        published: false,
+        author: 'NKCQJDMUIH1231'
+    },
+    {
+        id: '2',
         title: 'Walking in the sun',
-    body: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+        body: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
      when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
      It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. 
      It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker 
      including versions of Lorem Ipsum. jrod`,
-    published: false,
-    author: 'kasdkjsadasd'
-},
-{
-    id: '3',
+        published: false,
+        author: 'kasdkjsadasd'
+    },
+    {
+        id: '3',
         title: 'How to build a blog',
-    body: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
+        body: `Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
      when an unknown printer took a galley of type and scrambled it to make a type specimen book. 
      It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. 
      It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker 
      including versions of Lorem Ipsum. test`,
-    published: false,
-    author: 'adjaskdjsakjd'
-}]
+        published: false,
+        author: 'adjaskdjsakjd'
+    }
+]
 
 const grades = [100, 90, 70]
 
@@ -162,15 +187,17 @@ const grades = [100, 90, 70]
 // };
 
 //resolver with customer type being returned for me query
-const resolverSetup = ( userInfo, postsArray, grades) => {
+const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
     return {
         Query: {
-            me: ({id,
-                 name,
-                 age,
-                 location,
-                 alive,
-                 salary } = userInfo) => {
+            me: ({
+                id,
+                name,
+                age,
+                location,
+                alive,
+                salary
+            } = userInfo) => {
                 return {
                     id,
                     name,
@@ -181,31 +208,36 @@ const resolverSetup = ( userInfo, postsArray, grades) => {
                 }
             },
             posts: (parent, args, context, info) => {
-               if(!args.query){
-                   return postsArray
-               }
+                if (!args.query) {
+                    return postsArray
+                }
 
-               return postsArray.filter(post => post.title.toLowerCase().includes(args.query.toLowerCase()) || post.body.toLowerCase().includes(args.query.toLowerCase()))
+                return postsArray.filter(post => post.title.toLowerCase().includes(args.query.toLowerCase()) || post.body.toLowerCase().includes(args.query.toLowerCase()))
             },
             add: (obj, args, context, info) => args.a + args.b,
-            grades: (parent, args, context, info) =>  [...grades],
-            addGrades: (parent, args, context, info) => (args.total.length !== 0 ? (args.total.reduce((acc, value) =>  acc + value))/args.total.length : 0)
-        },
-        Post:{
-            author: (parent, args, context, info) => {
-                return userInfo.find( (user) => user.id === parent.author)
+            grades: (parent, args, context, info) => [...grades],
+            addGrades: (parent, args, context, info) => (args.total.length !== 0 ? (args.total.reduce((acc, value) => acc + value)) / args.total.length : 0),
+            comments: (parent, args, context, info) => {
+                if (!args.query) {
+                    return arrayOfComments
+                }
             }
         },
-        User:{
+        Post: {
+            author: (parent, args, context, info) => {
+                return userInfo.find((user) => user.id === parent.author)
+            }
+        },
+        User: {
             posts: (parent, args, context, info) => {
-                return userInfo.find( (user) => user.id === parent.author)
+                return userInfo.find((user) => user.id === parent.author)
             }
         }
     }
 };
 
 // const resolvers = resolverSetup(userInformation);
-const resolvers = resolverSetup(userInformation2, postInformation, grades);
+const resolvers = resolverSetup(userInformation2, postInformation, grades, arrayOfComments);
 
 const server = new GraphQLServer({
     typeDefs,
