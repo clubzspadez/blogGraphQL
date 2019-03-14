@@ -43,17 +43,19 @@ import {
 const typeDefs = `
     type Query {
         add(a: Float!, b: Float!): Float!
-        me: User!
         post: Post!
         posts(query: String): [Post!]!
         grades: [Int!]!
         addGrades(total: [Float!]!): Float!
         comments:[Comment!]!
+        user: User!
+        users(query: String) : [User!]!
     }
 
     type Comment {
         id: ID!
         text: String!
+        author: User!
     }
 
     type User {
@@ -63,7 +65,9 @@ const typeDefs = `
         location:String!
         alive: Boolean!
         salary: Float!
+        bio: String!
         posts: [Post!]!
+        comments: [Comment!]!
     }
     
     type Post {
@@ -86,19 +90,23 @@ const typeDefs = `
 
 const arrayOfComments = [{
         id: '1',
-        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl'
+        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl',
+        author: 'kasdkjsadasd'
     },
     {
         id: '2',
-        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl'
+        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl',
+        author: 'NKCQJDMUIH1231'
     },
     {
         id: '3',
-        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl'
+        text: 'TESTETSTETSTTETSTETSTETSTETSETTETSTETSTETSTETSTETS TETSTETTESTETSTETST ',
+        author: 'adjaskdjsakjd'
     },
     {
         id: '4',
-        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl'
+        text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl',
+        author: 'adjaskdjsakjd'
     }
 ]
 
@@ -190,22 +198,11 @@ const grades = [100, 90, 70]
 const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
     return {
         Query: {
-            me: ({
-                id,
-                name,
-                age,
-                location,
-                alive,
-                salary
-            } = userInfo) => {
-                return {
-                    id,
-                    name,
-                    age,
-                    location,
-                    alive,
-                    salary
+            users: (parent, args, context, info) => {
+                if (!args.query) {
+                    return userInfo
                 }
+                return userInfo.filter( user => user.name.toLowerCase().includes(args.query.toLowerCase()))
             },
             posts: (parent, args, context, info) => {
                 if (!args.query) {
@@ -221,7 +218,13 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
                 if (!args.query) {
                     return arrayOfComments
                 }
-            }
+            },
+            post: (parent, args, context, info) => ({
+                id: '123213',
+                title:'Vacation home town',
+                body:'DIs is not a body, u know what i mean guurrl',
+                published: false
+            })
         },
         Post: {
             author: (parent, args, context, info) => {
@@ -230,7 +233,15 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
         },
         User: {
             posts: (parent, args, context, info) => {
-                return userInfo.find((user) => user.id === parent.author)
+                return postsArray.filter((post) => post.author === parent.id)
+            },
+            comments:(parent, args, context, info) => {
+                return arrayOfComments.filter((comment) => comment.author === parent.id)
+            }
+        },
+        Comment:{
+            author: (parent, args, context, info) => {
+                return userInfo.find(user => user.id === parent.author);
             }
         }
     }
