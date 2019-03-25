@@ -56,6 +56,7 @@ const typeDefs = `
         id: ID!
         text: String!
         author: User!
+        post: Post!
     }
 
     type User {
@@ -76,6 +77,7 @@ const typeDefs = `
         body: String!
         published: Boolean!
         author: User!
+        comments: [Comment]
     }
 `
 
@@ -91,22 +93,26 @@ const typeDefs = `
 const arrayOfComments = [{
         id: '1',
         text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl',
-        author: 'kasdkjsadasd'
+        author: 'kasdkjsadasd',
+        post: `3`
     },
     {
         id: '2',
         text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl',
-        author: 'NKCQJDMUIH1231'
+        author: 'NKCQJDMUIH1231',
+        post: '1'
     },
     {
         id: '3',
         text: 'TESTETSTETSTTETSTETSTETSTETSETTETSTETSTETSTETSTETS TETSTETTESTETSTETST ',
-        author: 'adjaskdjsakjd'
+        author: 'adjaskdjsakjd',
+        post: '2'
     },
     {
         id: '4',
         text: 'Lolsdasdl asdlasdlasl asdlasdlalsda sjasdlll asldasldlasld asldlasdlasld asdlalsdlsad saldlasldl',
-        author: 'adjaskdjsakjd'
+        author: 'adjaskdjsakjd',
+        post: '2'
     }
 ]
 
@@ -229,6 +235,9 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
         Post: {
             author: (parent, args, context, info) => {
                 return userInfo.find((user) => user.id === parent.author)
+            },
+            comments: (parent, args, context, info) => {
+                return arrayOfComments.filter( comments => parent.id === comments.post)
             }
         },
         User: {
@@ -242,6 +251,9 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
         Comment:{
             author: (parent, args, context, info) => {
                 return userInfo.find(user => user.id === parent.author);
+            },
+            post: (parent, args, context, info) => {
+                return postInformation.find( post => post.id === parent.post )
             }
         }
     }
