@@ -79,6 +79,10 @@ const typeDefs = `
         author: User!
         comments: [Comment]
     }
+    
+    type Mutation {
+        createUser(name:String!, email: String!, age:Int): User!
+    }
 `
 
 
@@ -221,9 +225,7 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
             grades: (parent, args, context, info) => [...grades],
             addGrades: (parent, args, context, info) => (args.total.length !== 0 ? (args.total.reduce((acc, value) => acc + value)) / args.total.length : 0),
             comments: (parent, args, context, info) => {
-                if (!args.query) {
-                    return arrayOfComments
-                }
+                if (!args.query) return arrayOfComments
             },
             post: (parent, args, context, info) => ({
                 id: '123213',
@@ -231,6 +233,24 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
                 body:'DIs is not a body, u know what i mean guurrl',
                 published: false
             })
+        },
+        Mutation: {
+            createUser: (parent, args, context, info)=> {
+                //validate email
+                //The some() method tests whether at least one element in the array passes the test implemented by the provided function.
+                //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
+                const hasEmailBeenTaken = users.some( user =>  user.email === args.email)
+
+                if(hasEmailBeenTaken) throw new Error("Email has been taken.")
+
+                const user = {
+                    name: args.name,
+                    email: args. email,
+                    age: args.age
+                }
+                userInformation2.push(user)
+                return user
+            }
         },
         Post: {
             author: (parent, args, context, info) => {
