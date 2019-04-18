@@ -1,6 +1,7 @@
 import {
     GraphQLServer
 } from "graphql-yoga";
+import  uuidv4  from 'uuid/v4'
 
 //Firs example type definition
 // const typeDefs = `
@@ -63,6 +64,7 @@ const typeDefs = `
         id: ID!
         name: String!
         age: Int
+        email: String!
         location:String!
         alive: Boolean!
         salary: Float!
@@ -82,6 +84,8 @@ const typeDefs = `
     
     type Mutation {
         createUser(name:String!, email: String!, age:Int): User!
+        createPost(title: String!, body: String!, published: Boolean!, author: String!): Post!
+        createComment(text:String!, author:String!, post: String!): Comment!
     }
 `
 
@@ -154,7 +158,7 @@ const postInformation = [{
      It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. 
      It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker 
      including versions of Lorem Ipsum. mass`,
-        published: false,
+        published: true,
         author: 'NKCQJDMUIH1231'
     },
     {
@@ -239,17 +243,58 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
                 //validate email
                 //The some() method tests whether at least one element in the array passes the test implemented by the provided function.
                 //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
-                const hasEmailBeenTaken = users.some( user =>  user.email === args.email)
+
+                const hasEmailBeenTaken = userInformation2.some( user =>  user.email === args.email)
 
                 if(hasEmailBeenTaken) throw new Error("Email has been taken.")
 
                 const user = {
+                    id: uuidv4(),
                     name: args.name,
                     email: args. email,
                     age: args.age
                 }
                 userInformation2.push(user)
                 return user
+            },
+            createPost: (parent, args, context, info)=> {
+                //!  -> validate email
+                //*  -> The some() method tests whether at least one element in the array passes the test implemented by the provided function.
+                //?  -> https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
+                const userExists = userInformation2.some( user =>  user.id === args.author)
+
+                if(!userExists) throw new Error("User not found")
+
+                const post = {
+                    id: uuidv4(),
+                    title: args.title,
+                    body: args.body,
+                    published: args.published,
+                    author: args.author
+                }
+                postInformation.push(post)
+                return post
+            },
+            createComment: (parent, args, context, info)=> {
+                //!  -> validate user, post
+                //*  -> The some() method tests whether at least one element in the array passes the test implemented by the provided function.
+                //?  -> https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
+                const userExists = userInformation2.some( user =>  user.id === args.author)
+                const postExists = postInformation.some( post =>  post.id === args.post && post.published)
+
+
+                if(!userExists) throw new Error("User not found")
+                if(!postExists) throw new Error("Post not found")
+
+                //*
+                const comment = {
+                    id: uuidv4(),
+                    text: args.text,
+                    author: args.author,
+                    post: args.post
+                }
+                arrayOfComments.push(comment)
+                return comment
             }
         },
         Post: {
@@ -284,7 +329,9 @@ const resolvers = resolverSetup(userInformation2, postInformation, grades, array
 
 const server = new GraphQLServer({
     typeDefs,
-    resolvers
+    resolvers,
 });
 
-server.start(() => console.log(`Server is running`));
+const options = { port: 4001 }
+
+server.start(options ,() => console.log(`Server is running`));
