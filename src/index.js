@@ -82,10 +82,29 @@ const typeDefs = `
         comments: [Comment]
     }
     
+    input CreateUserInput {
+        name:String!
+        email: String!
+        age:Int
+    }
+    
+    input CreatePostInput {
+        title: String!
+        body: String!
+        published: Boolean!
+        author: String!
+    }
+    
+    input CreateCommentInput {
+        text:String!
+        author:String!
+        post: String!
+    }
+    
     type Mutation {
-        createUser(name:String!, email: String!, age:Int): User!
-        createPost(title: String!, body: String!, published: Boolean!, author: String!): Post!
-        createComment(text:String!, author:String!, post: String!): Comment!
+        createUser(input: CreateUserInput): User!
+        createPost(input: CreatePostInput): Post!
+        createComment(data: CreateCommentInput): Comment!
     }
 `
 
@@ -279,8 +298,8 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
                 //!  -> validate user, post
                 //*  -> The some() method tests whether at least one element in the array passes the test implemented by the provided function.
                 //?  -> https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
-                const userExists = userInformation2.some( user =>  user.id === args.author)
-                const postExists = postInformation.some( post =>  post.id === args.post && post.published)
+                const userExists = userInformation2.some( user =>  user.id === args.input.author)
+                const postExists = postInformation.some( post =>  post.id === args.input.post && post.published)
 
 
                 if(!userExists) throw new Error("User not found")
@@ -289,9 +308,9 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
                 //*
                 const comment = {
                     id: uuidv4(),
-                    text: args.text,
-                    author: args.author,
-                    post: args.post
+                    text: args.input.text,
+                    author: args.input.author,
+                    post: args.input.post
                 }
                 arrayOfComments.push(comment)
                 return comment
