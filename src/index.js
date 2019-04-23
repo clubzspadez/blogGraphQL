@@ -3,51 +3,21 @@ import {
 } from "graphql-yoga";
 import  uuidv4  from 'uuid/v4'
 
-//Firs example type definition
-// const typeDefs = `
-//     type Query {
-//         name: String!
-//         age: Int!
-//         location:String!
-//         bio: String!
-//     }
-// `
-
-// second example type definition with all Scalar types
-// const typeDefs = `
-//     type Query {
-//         id: ID!
-//         name: String!
-//         age: Int!
-//         location:String!
-//         alive: Boolean!
-//         salary: Float!
-//     }
-// `;
-
-// third example type definition with all Custom types
-// const typeDefs = `
-//     type Query {
-//         me: User
-//     }
-//
-//     type User {
-//         id: ID!
-//         name: String!
-//         age: Int
-//         location:String!
-//         alive: Boolean!
-//         salary: Float!
-//     }
-// `;
+// ? ---------------------------------- Type Definitions ----------------------------------------
+// * Query : the Query type allows you define fields --------------------------------------
+// * Comment - Object type: represents a schema for a comment and contains fields such as id(scalar), text(scalar), author(custom), post(customer  --------------------------------------
+// * User - Object type: represents a schema for a user and contains fields such as id(scalar), name(scalar), ...  --------------------------------------
+// * Post - Object type: represents a schema for a post and contains fields such as id(scalar), title(scalar), ...  --------------------------------------
+// * User - Object type: represents a schema for a comment and contains fields such as id(scalar), name(scalar), ...  --------------------------------------
+// * CreateUserInput - Input type: represents a a complex object that can be used in a mutation as arguments. These can only use scalar types --------------------------------------
+// * CreatePostInput - Input type: represents a a complex object that can be used in a mutation as arguments. These can only use scalar types --------------------------------------
+// * CreateCommentInput - Input type: represents a a complex object that can be used in a mutation as arguments. These can only use scalar types --------------------------------------
+// * Mutation: the Mutation type allows you to do data fetching, deletion, updating, etc.  --------------------------------------
 
 const typeDefs = `
     type Query {
-        add(a: Float!, b: Float!): Float!
         post: Post!
         posts(query: String): [Post!]!
-        grades: [Int!]!
-        addGrades(total: [Float!]!): Float!
         comments:[Comment!]!
         user: User!
         users(query: String) : [User!]!
@@ -102,20 +72,14 @@ const typeDefs = `
     }
     
     type Mutation {
-        createUser(input: CreateUserInput): User!
-        createPost(input: CreatePostInput): Post!
-        createComment(data: CreateCommentInput): Comment!
+        createUser(input: CreateUserInput!): User!
+        createPost(input: CreatePostInput!): Post!
+        createComment(input: CreateCommentInput!): Comment!
     }
 `
-
-
-
-// const userInformation = {
-//     name: 'Jonathan',
-//     age: 26,
-//     location: 'Burlington ',
-//     bio: 'This is your typical bio!'
-// }
+/*
+  ! input types can only contain scalar values -> ID, String, Int, Float, Boolean
+*/
 
 const arrayOfComments = [{
         id: '1',
@@ -204,30 +168,6 @@ const postInformation = [{
     }
 ]
 
-const grades = [100, 90, 70]
-
-
-// const resolverSetup = ({
-//     id,
-//     name,
-//     age,
-//     location,
-//     alive,
-//     salary
-// }) => {
-//     return {
-//         Query: {
-//             id: () =>  id,
-//             name: () => ` My name is ${name}`,
-//             age: () => age,
-//             location: () => `My location is ${location}`,
-//             alive: () => alive,
-//             salary: () => salary
-//         }
-//     }
-// };
-
-//resolver with customer type being returned for me query
 const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
     return {
         Query: {
@@ -244,9 +184,6 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
 
                 return postsArray.filter(post => post.title.toLowerCase().includes(args.query.toLowerCase()) || post.body.toLowerCase().includes(args.query.toLowerCase()))
             },
-            add: (obj, args, context, info) => args.a + args.b,
-            grades: (parent, args, context, info) => [...grades],
-            addGrades: (parent, args, context, info) => (args.total.length !== 0 ? (args.total.reduce((acc, value) => acc + value)) / args.total.length : 0),
             comments: (parent, args, context, info) => {
                 if (!args.query) return arrayOfComments
             },
@@ -263,15 +200,15 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
                 //The some() method tests whether at least one element in the array passes the test implemented by the provided function.
                 //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
 
-                const hasEmailBeenTaken = userInformation2.some( user =>  user.email === args.email)
+                const hasEmailBeenTaken = userInformation2.some( user =>  user.email === args.input.email)
 
                 if(hasEmailBeenTaken) throw new Error("Email has been taken.")
 
                 const user = {
                     id: uuidv4(),
-                    name: args.name,
-                    email: args. email,
-                    age: args.age
+                    name: args.input.name,
+                    email: args.input.email,
+                    age: args.input.age
                 }
                 userInformation2.push(user)
                 return user
@@ -280,16 +217,16 @@ const resolverSetup = (userInfo, postsArray, grades, arrayOfComments) => {
                 //!  -> validate email
                 //*  -> The some() method tests whether at least one element in the array passes the test implemented by the provided function.
                 //?  -> https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/some
-                const userExists = userInformation2.some( user =>  user.id === args.author)
+                const userExists = userInformation2.some( user =>  user.id === args.input.author)
 
                 if(!userExists) throw new Error("User not found")
 
                 const post = {
                     id: uuidv4(),
-                    title: args.title,
-                    body: args.body,
-                    published: args.published,
-                    author: args.author
+                    title: args.input.title,
+                    body: args.input.body,
+                    published: args.input.published,
+                    author: args.input.author
                 }
                 postInformation.push(post)
                 return post
